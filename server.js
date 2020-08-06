@@ -26,15 +26,32 @@ const nodes = {};
 io.on("connection", function (socket) {
 
     socket.on("init", async function () {
-        nodes[socket.id] = {id: socket.id};
-
         const response = await twilio.tokens.create();
+
+        // add new player to memory
+        nodes[socket.id] = {
+            id: socket.id,
+            location: {x: 0, y: 0, z: 0},
+            rotation: {y: 0},
+        };
+
+        // send new player to rest of current players
+        socket.broadcast.emit('players', {[socket.id]: nodes[socket.id]});
 
         socket.emit("init", {
             nodes,
             iceServers: JSON.stringify(response.iceServers),
             socketId: socket.id,
         });
+    });
+
+    socket.on('move', ({location, rotation}) => {
+        if (nodes[socket.id]) {
+            const player = nodes[socket.id];
+            player.dirty = true;
+            if (location) player.location = location;
+            if (rotation) player.rotation = rotation;
+        }
     });
 
     socket.on("offer", function ({offer, receiver}) {
