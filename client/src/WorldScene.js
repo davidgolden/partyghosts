@@ -1,9 +1,15 @@
 import {
     AmmoJSPlugin,
-    ArcRotateCamera, ArcRotateCameraInputsManager, ArcRotateCameraPointersInput, Color3, HemisphericLight,
+    ArcRotateCamera,
+    ArcRotateCameraInputsManager,
+    ArcRotateCameraPointersInput,
+    Color3,
+    DirectionalLight,
+    HemisphericLight,
     MeshBuilder,
     PhysicsImpostor,
     Scene,
+    ShadowGenerator,
     StandardMaterial,
     Texture,
     Vector3
@@ -19,7 +25,7 @@ export default class WorldScene extends Scene {
         this.gravity = gravityVector;
 
         const groundMaterial = new StandardMaterial("groundMaterial", this);
-        groundMaterial.diffuseTexture = new Texture("./assets/grass.jpg", this);
+        groundMaterial.diffuseColor = new Color3(.3, .7, .4);
 
         this.ground = MeshBuilder.CreateGround("ground", {height: 200, width: 200}, this);
         this.ground.position.y = 0;
@@ -35,7 +41,13 @@ export default class WorldScene extends Scene {
         // This attaches the camera to the canvas
         this.camera.attachControl(canvas, true, true, 1);
 
-        const light = new HemisphericLight("sun", new Vector3(0, 10, 0), this);
+        const light = new DirectionalLight("sun", new Vector3(-1, -2, -1), this);
+        light.position = new Vector3(20, 40, 20);
+        light.intensity = 0.5;
         light.diffuse = new Color3(1, 1, 1);
+
+        this.shadowGenerator = new ShadowGenerator(200, light);
+        this.shadowGenerator.useExponentialShadowMap = true;
+        this.ground.receiveShadows = true;
     }
 }

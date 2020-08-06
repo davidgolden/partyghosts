@@ -19,6 +19,8 @@ export default class Player {
         this.mesh.position = new Vector3(this.playerObj.location.x, .5, this.playerObj.location.z);
         this.mesh.rotation.y = this.playerObj.rotation.y;
 
+        this.scene.shadowGenerator.addShadowCaster(this.mesh);
+
         this.distanceToDestination = 0;
         this.normalizedDestinationVector = new Vector3.Zero();
         this.speed = new Vector3(0, 0, 0.08);
