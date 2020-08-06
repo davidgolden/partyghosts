@@ -25,7 +25,9 @@ export default class WorldScene extends Scene {
         this.gravity = gravityVector;
 
         const groundMaterial = new StandardMaterial("groundMaterial", this);
-        groundMaterial.diffuseColor = new Color3(.3, .7, .4);
+        groundMaterial.diffuseTexture = new Texture("./assets/GrassGreenTexture0001.jpg", this);
+        groundMaterial.diffuseTexture.uScale = 20;
+        groundMaterial.diffuseTexture.vScale = 20;
 
         this.ground = MeshBuilder.CreateGround("ground", {height: 200, width: 200}, this);
         this.ground.position.y = 0;
@@ -43,7 +45,7 @@ export default class WorldScene extends Scene {
 
         const light = new DirectionalLight("sun", new Vector3(-1, -2, -1), this);
         light.position = new Vector3(20, 40, 20);
-        light.intensity = 0.5;
+        light.intensity = 1;
         light.diffuse = new Color3(1, 1, 1);
 
         this.shadowGenerator = new ShadowGenerator(200, light);
