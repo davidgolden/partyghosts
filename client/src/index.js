@@ -20,10 +20,11 @@ function addPlayer(player) {
     players[player.id] = new Player({scene, engine, playerObj: player});
 }
 
+let hero;
 socket.on('init', data => {
     Array.from(Object.values(data.nodes)).forEach(node => {
         if (node.id === data.socketId) {
-            const hero = new Hero({
+            hero = new Hero({
                 scene,
                 engine,
                 playerObj: node,
@@ -39,13 +40,16 @@ socket.on('players', players => {
 });
 socket.emit('init');
 
-socket.on('move', ({location, rotation, id}) => {
-    if (players[id]) {
-        if (location) players[id].mesh.position = new Vector3(location.x, location.y, location.z);
-        if (rotation) players[id].mesh.rotation.y = rotation.y;
-    }
+socket.on('tick', (updatePacket) => {
+    Array.from(Object.values(updatePacket)).forEach(node => {
+        if (hero && node.id !== hero.playerObj.id) {
+            const player = players[node.id];
+            if (node.location) player.moveToDestination(new Vector3(node.location.x, node.location.y, node.location.z));
+            if (node.rotation) player.mesh.rotation.y = node.rotation.y;
+        }
+    })
 });
-socket.on('disconnect', id => {
+socket.on('disconnection', id => {
     players[id].mesh.dispose(true, true);
     delete players[id];
 });
@@ -53,4 +57,9 @@ socket.on('disconnect', id => {
 // Register a render loop to repeatedly render the scene
 engine.runRenderLoop(function () {
     scene.render();
+});
+
+// Watch for browser/canvas resize events
+window.addEventListener("resize", function() {
+    engine.resize();
 });

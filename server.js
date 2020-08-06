@@ -23,6 +23,33 @@ app.get("/", function (req, res) {
 
 const nodes = {};
 
+function getSocket(socketId) {
+    return io.sockets.connected[socketId];
+}
+
+function sendUpdate(socketId, pkg) {
+    if (pkg && getSocket(socketId)) {
+        // pkg = new Buffer(JSON.stringify(pkg));
+        // pkg = zlib.deflate(pkg, () => server.getSocket(socketId).emit('tick', pkg));
+        getSocket(socketId).emit('tick', pkg)
+    }
+}
+
+setInterval(() => {
+    const updatePacket = {};
+    for (let k in nodes) {
+        if (nodes.hasOwnProperty(k) && nodes[k].dirty) {
+            updatePacket[k] = nodes[k];
+            nodes[k].dirty = false;
+        }
+    }
+
+    if (Object.keys(updatePacket).length > 0) {
+        io.emit('tick', updatePacket);
+    }
+
+}, 50);
+
 io.on("connection", function (socket) {
 
     socket.on("init", async function () {
@@ -69,20 +96,6 @@ io.on("connection", function (socket) {
     // negotiation is needed and waiting for initiator to send offer
     socket.on("ready", function({receiver}) {
         io.to(receiver).emit("ready", {sender: socket.id})
-    });
-
-    socket.on('present', function() {
-        if (nodes[socket.id]) {
-            for (let k in nodes) {
-                if (nodes.hasOwnProperty(k)) {
-                    nodes[k] = 'viewer';
-                }
-            }
-            nodes[socket.id] = 'presenter';
-
-            socket.emit('presenter', socket.id);
-            socket.broadcast.emit('presenter', socket.id);
-        }
     });
 
     socket.on('disconnect', () => {
