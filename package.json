@@ -5,16 +5,32 @@
   "main": "public/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "npx webpack --config webpack.common.js",
+    "build:prod": "npx webpack --config webpack.common.js",
+    "heroku-postbuild": "npm run build:prod",
+    "build:watch": "npx webpack --config webpack.common.js --watch"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@babel/core": "^7.11.1",
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/plugin-proposal-optional-chaining": "^7.11.0",
+    "@babel/preset-env": "^7.11.0",
+    "@babylonjs/core": "^4.1.0",
+    "core-js": "^3.6.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "heroku-ssl-redirect": "0.0.4",
+    "regenerator-runtime": "^0.13.7",
     "socket.io": "^2.3.0",
     "twilio": "^3.46.0",
+    "webpack": "^4.44.1",
     "ws": "^7.3.0"
+  },
+  "devDependencies": {
+    "babel-loader": "^8.1.0",
+    "webpack-cli": "^3.3.12"
   }
 }

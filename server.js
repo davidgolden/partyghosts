@@ -10,7 +10,7 @@ var twillioAccountSID = process.env.LOCAL_TWILLIO_SID;
 var twilio = require("twilio")(twillioAccountSID, twillioAuthToken);
 
 app.use(sslRedirect());
-app.use(express.static("public"));
+app.use(express.static("client"));
 var iceServers;
 
 twilio.tokens.create(function (err, response) {
@@ -26,9 +26,7 @@ const nodes = {};
 io.on("connection", function (socket) {
 
     socket.on("init", async function () {
-        const nodeArray = Array.from(Object.entries(nodes));
-        const presenter = nodeArray.length === 0 || nodeArray.findIndex(([key, value]) => value === 'presenter') === -1;
-        nodes[socket.id] = presenter ? "presenter" : "viewer";
+        nodes[socket.id] = {id: socket.id};
 
         const response = await twilio.tokens.create();
 
@@ -36,10 +34,7 @@ io.on("connection", function (socket) {
             nodes,
             iceServers: JSON.stringify(response.iceServers),
             socketId: socket.id,
-            presenter: presenter ? socket.id : nodeArray.find(([key, value]) => value === 'presenter')[0],
         });
-
-        socket.broadcast.emit('newconnection', socket.id);
     });
 
     socket.on("offer", function ({offer, receiver}) {
