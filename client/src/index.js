@@ -9,20 +9,21 @@ import Hero from "./Hero";
 import {socket} from "./socket";
 import WorldScene from "./WorldScene";
 
+const roomName = window.location.href.match(/\/room\/(\w*)$/)[1];
 const canvas = document.getElementById("renderCanvas");
 const engine = new Engine(canvas, true);
 
 const scene = new WorldScene(engine, canvas);
 
-const players = {};
+const users = {};
 
-function addPlayer(player) {
-    players[player.id] = new Player({scene, engine, playerObj: player});
+function addUser(user) {
+    users[user.id] = new Player({scene, engine, playerObj: user});
 }
 
 let hero;
 socket.on('init', data => {
-    Array.from(Object.values(data.nodes)).forEach(node => {
+    Array.from(Object.values(data.users)).forEach(node => {
         if (node.id === data.socketId) {
             hero = new Hero({
                 scene,
@@ -31,27 +32,27 @@ socket.on('init', data => {
             });
             hero.handleInit(data);
         } else {
-            addPlayer(node);
+            addUser(node);
         }
     })
 });
-socket.on('players', players => {
-    Array.from(Object.values(players)).forEach(node => addPlayer(node));
+socket.on('users', users => {
+    Array.from(Object.values(users)).forEach(node => addUser(node));
 });
-socket.emit('init');
+socket.emit('init', roomName);
 
 socket.on('tick', (updatePacket) => {
     Array.from(Object.values(updatePacket)).forEach(node => {
         if (hero && node.id !== hero.playerObj.id) {
-            const player = players[node.id];
+            const player = users[node.id];
             if (node.location) player.moveToDestination(new Vector3(node.location.x, node.location.y, node.location.z));
             if (node.rotation) player.mesh.rotation.y = node.rotation.y;
         }
     })
 });
 socket.on('disconnection', id => {
-    players[id].mesh.dispose(true, true);
-    delete players[id];
+    users[id].mesh.dispose(true, true);
+    delete users[id];
 });
 
 // Register a render loop to repeatedly render the scene

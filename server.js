@@ -8,20 +8,38 @@ var io = require("socket.io")(http);
 var twillioAuthToken = process.env.LOCAL_AUTH_TOKEN;
 var twillioAccountSID = process.env.LOCAL_TWILLIO_SID;
 var twilio = require("twilio")(twillioAccountSID, twillioAuthToken);
+const {generateRandomWord} = require("./server/roomNamesGenerator");
 
 app.use(sslRedirect());
-app.use(express.static("client"));
+app.use(express.static(path.resolve("client")));
 var iceServers;
 
 twilio.tokens.create(function (err, response) {
     iceServers = JSON.stringify(response.iceServers);
 });
 
-app.get("/", function (req, res) {
-    res.sendFile(path.resolve("index.html"));
+app.post("/create", function (req, res) {
+    const roomName = generateRandomWord();
+    res.redirect(307, `/room/${roomName}`);
 });
 
-const nodes = {};
+const users = {};
+const rooms = {};
+
+app.get("/", function(req, res) {
+    res.sendFile(path.resolve("./client/index.html"));
+})
+
+app.post("/room/:roomName", function(req, res) {
+    const roomName = req.params.roomName;
+    if (!rooms[roomName]) {
+        rooms[roomName] = {
+            users: {},
+        }
+    }
+
+    res.sendFile(path.resolve("./client/game.html"));
+})
 
 function getSocket(socketId) {
     return io.sockets.connected[socketId];
@@ -36,48 +54,53 @@ function sendUpdate(socketId, pkg) {
 }
 
 setInterval(() => {
-    const updatePacket = {};
-    for (let k in nodes) {
-        if (nodes.hasOwnProperty(k) && nodes[k].dirty) {
-            updatePacket[k] = nodes[k];
-            nodes[k].dirty = false;
+    Array.from(Object.entries(rooms)).forEach(([roomName, room]) => {
+        const updatePacket = {};
+        Array.from(Object.values(room.users)).forEach(user => {
+            if (user.dirty) {
+                updatePacket[user.id] = user;
+                user.dirty = false;
+            }
+        })
+
+        if (Object.keys(updatePacket).length > 0) {
+            io.to(roomName).emit('tick', updatePacket);
         }
-    }
-
-    if (Object.keys(updatePacket).length > 0) {
-        io.emit('tick', updatePacket);
-    }
-
+    })
 }, 50);
 
 io.on("connection", function (socket) {
 
-    socket.on("init", async function () {
+    socket.on("init", async function (roomName) {
         const response = await twilio.tokens.create();
 
-        // add new player to memory
-        nodes[socket.id] = {
+        const user = {
             id: socket.id,
             location: {x: 0, y: 0, z: 0},
             rotation: {y: 0},
+            room: roomName,
         };
+        rooms[roomName].users[user.id] = user;
+        users[user.id] = user;
 
-        // send new player to rest of current players
-        socket.broadcast.emit('players', {[socket.id]: nodes[socket.id]});
+        socket.join(roomName);
+
+        // send new player to rest of current users
+        socket.to(roomName).emit('users', {[user.id]: user});
 
         socket.emit("init", {
-            nodes,
+            users: rooms[roomName].users,
             iceServers: JSON.stringify(response.iceServers),
             socketId: socket.id,
         });
     });
 
     socket.on('move', ({location, rotation}) => {
-        if (nodes[socket.id]) {
-            const player = nodes[socket.id];
-            player.dirty = true;
-            if (location) player.location = location;
-            if (rotation) player.rotation = rotation;
+        if (users[socket.id]) {
+            const user = users[socket.id];
+            user.dirty = true;
+            if (location) user.location = location;
+            if (rotation) user.rotation = rotation;
         }
     });
 
@@ -99,8 +122,9 @@ io.on("connection", function (socket) {
     });
 
     socket.on('disconnect', () => {
-        socket.broadcast.emit('disconnection', socket.id);
-        delete nodes[socket.id];
+        const user = users[socket.id];
+        socket.to(user.room).emit('disconnection', socket.id);
+        delete users[socket.id];
     });
 });
 

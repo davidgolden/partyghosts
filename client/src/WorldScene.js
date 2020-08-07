@@ -25,7 +25,7 @@ export default class WorldScene extends Scene {
         this.gravity = gravityVector;
 
         const groundMaterial = new StandardMaterial("groundMaterial", this);
-        groundMaterial.diffuseTexture = new Texture("./assets/GrassGreenTexture0001.jpg", this);
+        groundMaterial.diffuseTexture = new Texture("/assets/GrassGreenTexture0001.jpg", this);
         groundMaterial.diffuseTexture.uScale = 20;
         groundMaterial.diffuseTexture.vScale = 20;
 
