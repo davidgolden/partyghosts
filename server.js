@@ -37,6 +37,14 @@ app.post("/room/:roomName", function(req, res) {
     res.sendFile(path.resolve("./client/game.html"));
 })
 
+app.get("/room/:roomName", function(req, res) {
+    const roomName = req.params.roomName;
+    const room = getRoom(roomName);
+
+    res.sendFile(path.resolve("./client/game.html"));
+})
+
+
 function getRoom(roomName) {
     if (!rooms[roomName]) {
         rooms[roomName] = {

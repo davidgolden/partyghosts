@@ -1,6 +1,16 @@
-import {socket} from "./socket";
-import PlayerAudio from "./PlayerAudio";
-import {MeshBuilder, Vector3, PhysicsImpostor, Space, Ray, Matrix, StandardMaterial, Color3} from "@babylonjs/core";
+import {
+    MeshBuilder,
+    Vector3,
+    PhysicsImpostor,
+    Space,
+    Ray,
+    Matrix,
+    StandardMaterial,
+    Color3,
+    DynamicTexture,
+    Quaternion,
+    Mesh
+} from "@babylonjs/core";
 
 export default class Player {
     constructor({scene, engine, playerObj}) {
@@ -31,6 +41,24 @@ export default class Player {
         this.speed = new Vector3(0, 0, 0.08);
         this.nextspeed = new Vector3.Zero();
 
+        const writingPlane = MeshBuilder.CreatePlane("writingPlane", {width: 2, height: .5}, this.scene);
+        const dynamicTexture = new DynamicTexture("dynamicTexture", {width:512, height:256}, this.scene, true);
+        const mat = new StandardMaterial("mat", this.scene);
+        writingPlane.position = new Vector3(0, 1, 0);
+        writingPlane.parent = this.mesh;
+        dynamicTexture.drawText(this.playerObj.name, null, null, "120px Arial", "#e5ef1c", "transparent", true);
+        mat.diffuseTexture = dynamicTexture;
+        mat.diffuseTexture.hasAlpha = true;
+        writingPlane.material = mat;
+
+        writingPlane.billboardMode = Mesh.BILLBOARDMODE_Y;
+
+        this.mesh.registerAfterRender(mesh => {
+            const q = Quaternion.RotationYawPitchRoll(mesh.rotation.y, mesh.rotation.x, mesh.rotation.z);
+            mesh.rotationQuaternion.x = q.x;
+            mesh.rotationQuaternion.z = q.z;
+        });
+
         this.scene.registerBeforeRender(() => {
             // this is necessary to prevent jitter
             if (this.mesh.physicsImpostor) this.mesh.physicsImpostor.setLinearVelocity(new Vector3(0, 0, 0));
@@ -38,6 +66,7 @@ export default class Player {
             if (this.distVec > 0) {
                 this.distVec -= 0.1;
                 this.mesh.translate(this.normalizedDestinationVector, 0.1, Space.WORLD);
+                this.mesh.rot
                 this.dirty = true;
             }
 
