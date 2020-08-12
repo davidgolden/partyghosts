@@ -32,14 +32,19 @@ app.get("/", function(req, res) {
 
 app.post("/room/:roomName", function(req, res) {
     const roomName = req.params.roomName;
+    const room = getRoom(roomName);
+
+    res.sendFile(path.resolve("./client/game.html"));
+})
+
+function getRoom(roomName) {
     if (!rooms[roomName]) {
         rooms[roomName] = {
             users: {},
         }
     }
-
-    res.sendFile(path.resolve("./client/game.html"));
-})
+    return rooms[roomName];
+}
 
 function getSocket(socketId) {
     return io.sockets.connected[socketId];
@@ -74,26 +79,35 @@ io.on("connection", function (socket) {
     socket.on("init", async function (roomName) {
         const response = await twilio.tokens.create();
 
+        const room = getRoom(roomName);
+
+        socket.emit("init", {
+            users: room.users,
+            iceServers: JSON.stringify(response.iceServers),
+            socketId: socket.id,
+        });
+    });
+
+    socket.on('newplayer', ({name, color, roomName}, callback) => {
+        const room = getRoom(roomName);
+
         const user = {
             id: socket.id,
             location: {x: 0, y: 0, z: 0},
             rotation: {y: 0},
             room: roomName,
+            color,
+            name,
         };
-        rooms[roomName].users[user.id] = user;
+        room.users[user.id] = user;
         users[user.id] = user;
 
         socket.join(roomName);
 
         // send new player to rest of current users
         socket.to(roomName).emit('users', {[user.id]: user});
-
-        socket.emit("init", {
-            users: rooms[roomName].users,
-            iceServers: JSON.stringify(response.iceServers),
-            socketId: socket.id,
-        });
-    });
+        callback(user);
+    })
 
     socket.on('move', ({location, rotation}) => {
         if (users[socket.id]) {
@@ -123,8 +137,11 @@ io.on("connection", function (socket) {
 
     socket.on('disconnect', () => {
         const user = users[socket.id];
-        socket.to(user.room).emit('disconnection', socket.id);
-        delete users[socket.id];
+        if (user && user.room) {
+            socket.to(user.room).emit('disconnection', socket.id);
+            delete rooms[user.room].users[user.id];
+            delete users[socket.id];
+        }
     });
 });
 

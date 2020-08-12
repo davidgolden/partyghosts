@@ -1,6 +1,6 @@
 import {socket} from "./socket";
 import PlayerAudio from "./PlayerAudio";
-import {MeshBuilder, Vector3, PhysicsImpostor, Space, Ray, Matrix} from "@babylonjs/core";
+import {MeshBuilder, Vector3, PhysicsImpostor, Space, Ray, Matrix, StandardMaterial, Color3} from "@babylonjs/core";
 
 export default class Player {
     constructor({scene, engine, playerObj}) {
@@ -8,9 +8,14 @@ export default class Player {
         this.engine = engine;
         this.playerObj = playerObj;
 
+        console.log(playerObj);
         this.mesh = MeshBuilder.CreateSphere(playerObj.id, {
             diameter: 1,
-        });
+        }, this.scene);
+
+        this.wrapper = new StandardMaterial(`wrapper-${this.playerObj.id}`, scene);
+        this.wrapper.diffuseColor = new Color3(playerObj.color.r, playerObj.color.g, playerObj.color.b);
+        this.mesh.material = this.wrapper;
 
         this.mesh.checkCollisions = true;
         this.mesh.applyGravity = true;

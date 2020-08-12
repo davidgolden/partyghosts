@@ -5,7 +5,7 @@ function capitalize(str) {
 }
 
 function generateIndex(arr) {
-    return Math.floor(Math.random() * (arr.length - 0 + 1));
+    return Math.floor(Math.random() * (arr.length));
 }
 
 function generateRandomWord() {
@@ -16,4 +16,5 @@ function generateRandomWord() {
 
 module.exports = {
     generateRandomWord,
+    generateIndex,
 }

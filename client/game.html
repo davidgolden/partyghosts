@@ -17,13 +17,85 @@
             height: 100%;
             touch-action: none;
         }
+
+        #modal-background {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(1, 1, 1, .6);
+        }
+
+        #modal {
+            width: 600px;
+            height: 300px;
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+        }
+
+        #modal > div {
+            width: calc(50% - 10px);
+            display: inline-block;
+            vertical-align: top;
+            text-align: center;
+        }
+
+        #modal > div > div {
+            padding: 10px 0;
+        }
+
+        #modal button {
+            padding: 5px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            cursor: pointer;
+            background-color: #d9d964;
+            color: #56560b;
+            border: 4px solid yellow;
+            border-radius: 5px;
+            box-shadow: 2px 2px 4px #4f4f16;
+        }
+
+        #modal button:hover {
+            color: #6d6d1b;
+            border-color: #b3b334;
+        }
+
+        #previewCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
     </style>
 </head>
 
 <body style="margin: 0">
 
-<div id="container">
+<div id="modal-background">
+    <div id="modal">
+        <div>
+            <canvas id="previewCanvas" touch-action="none"></canvas>
+        </div>
+        <div>
+            <div>
+                <label for="name">Enter your Name</label>
+                <input id="name" type="text" />
+            </div>
+            <div>
+                <button id="prevColorButton"><<</button>
+                Select a Color
+                <button id="nextColorButton">>></button>
+            </div>
+            <div>
+                <button id="submit">Submit</button>
+            </div>
+        </div>
+    </div>
 </div>
+
+<audio autoplay id="inboundAudio" style="visibility: hidden"></audio>
 
 <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 <script src="/socket.io/socket.io.js"></script>

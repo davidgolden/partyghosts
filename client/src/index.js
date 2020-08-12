@@ -8,6 +8,7 @@ import {
 import Hero from "./Hero";
 import {socket} from "./socket";
 import WorldScene from "./WorldScene";
+import PreviewScene from "./PreviewScene";
 
 const roomName = window.location.href.match(/\/room\/(\w*)$/)[1];
 const canvas = document.getElementById("renderCanvas");
@@ -21,17 +22,12 @@ function addUser(user) {
     users[user.id] = new Player({scene, engine, playerObj: user});
 }
 
-let hero;
+let hero, initData, socketId;
 socket.on('init', data => {
+    initData = data;
+    socketId = data.socketId;
     Array.from(Object.values(data.users)).forEach(node => {
-        if (node.id === data.socketId) {
-            hero = new Hero({
-                scene,
-                engine,
-                playerObj: node,
-            });
-            hero.handleInit(data);
-        } else {
+        if (node.id !== socketId) {
             addUser(node);
         }
     })
@@ -63,4 +59,25 @@ engine.runRenderLoop(function () {
 // Watch for browser/canvas resize events
 window.addEventListener("resize", function() {
     engine.resize();
+});
+
+function onHero(playerObj) {
+    previewScene.dispose();
+    previewEngine.dispose();
+    document.getElementById('modal-background').style.display = 'none';
+
+    hero = new Hero({
+        scene,
+        engine,
+        playerObj,
+    });
+    hero.handleInit(initData);
+}
+
+const previewCanvas = document.getElementById('previewCanvas');
+const previewEngine = new Engine(previewCanvas, true);
+const previewScene = new PreviewScene(previewEngine, previewCanvas, onHero, roomName);
+
+previewEngine.runRenderLoop(function() {
+    previewScene.render();
 });
