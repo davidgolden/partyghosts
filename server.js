@@ -117,6 +117,17 @@ io.on("connection", function (socket) {
         callback(user);
     })
 
+    socket.on('chat/message', message => {
+        const user = users[socket.id];
+        if (user) {
+            io.in(user.room).emit('chat/message', {
+                message,
+                sender: user.name,
+                timestamp: Date.now(),
+            });
+        }
+    })
+
     socket.on('move', ({location, rotation}) => {
         if (users[socket.id]) {
             const user = users[socket.id];

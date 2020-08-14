@@ -24,6 +24,8 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "heroku-ssl-redirect": "0.0.4",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
     "regenerator-runtime": "^0.13.7",
     "socket.io": "^2.3.0",
     "twilio": "^3.46.0",
@@ -31,7 +33,12 @@
     "ws": "^7.3.0"
   },
   "devDependencies": {
+    "@babel/preset-react": "^7.10.4",
     "babel-loader": "^8.1.0",
+    "css-loader": "^4.2.1",
+    "node-sass": "^4.14.1",
+    "sass-loader": "^9.0.3",
+    "style-loader": "^1.2.1",
     "webpack-cli": "^3.3.12"
   }
 }

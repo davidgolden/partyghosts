@@ -2,7 +2,12 @@ const path = require('path');
 
 module.exports = {
     mode: 'development',
-    entry: path.resolve(__dirname, "client/src/index.js"),
+    entry: {
+        game: [
+            "./client/src/index.js",
+            "./client/src/chat.js",
+        ],
+    },
     output: {
         filename: '[name]_bundle.js',
         path: path.resolve(__dirname, 'client/dist')
@@ -21,10 +26,18 @@ module.exports = {
                             "@babel/plugin-proposal-class-properties",
                             "@babel/plugin-proposal-optional-chaining",
                         ],
-                        presets: ['@babel/preset-env', ]
+                        presets: ['@babel/preset-env', "@babel/preset-react"]
                     }
                 }
             },
+            {
+                test: /\.s?css$/,
+                use: [
+                    "style-loader", // creates style nodes from JS strings
+                    { loader: "css-loader", options: {modules: true}},
+                    "sass-loader" // compiles Sass to CSS, using Node Sass by default
+                ]
+            }
         ]
     },
 }
