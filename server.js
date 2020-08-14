@@ -123,6 +123,7 @@ io.on("connection", function (socket) {
             io.in(user.room).emit('chat/message', {
                 message,
                 sender: user.name,
+                senderId: socket.id,
                 timestamp: Date.now(),
             });
         }

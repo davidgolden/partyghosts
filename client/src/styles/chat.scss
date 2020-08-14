@@ -1,13 +1,66 @@
 .container {
-  position: absolute;
-  left: 10px;
-  bottom: 10px;
-  background-color: rgba(255,255,255,.7);
-  border-radius: 10px;
+  color: white;
+  word-break: break-word;
+  bottom: 0;
+  width: 200px;
+  position: fixed;
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(29, 30, 33) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: rgb(29, 30, 33);
+    border-radius: 20px;
+    border: 3px solid transparent;
+  }
+
+  div {
+    display: flex;
+    flex-direction: column-reverse;
+    position: relative;
+    max-height: 400px;
+    overflow-y: auto;
+  }
 
   ul {
     list-style: none;
     padding: 10px;
     margin: 0;
+    font-size: .9rem;
+
+    .message {
+      margin: 3px 0;
+
+      span {
+        display: inline-block;
+        background-color: rgb(29, 30, 33);
+        padding: 5px 10px;
+        border-radius: 10px;
+      }
+
+      &Right {
+        text-align: right;
+      }
+    }
+  }
+
+  input {
+    background-color: #323131;
+    border-radius: 10px;
+    border: 0;
+    color: white;
+    font-size: 1rem;
+    margin: 0 auto;
+    width: 90%;
+    display: block;
+    padding: 10px;
   }
 }
