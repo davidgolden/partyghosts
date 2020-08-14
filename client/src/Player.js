@@ -18,7 +18,6 @@ export default class Player {
         this.engine = engine;
         this.playerObj = playerObj;
 
-        console.log(playerObj);
         this.mesh = MeshBuilder.CreateSphere(playerObj.id, {
             diameter: 1,
         }, this.scene);

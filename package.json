@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "build": "npx webpack --config webpack.common.js",
-    "build:prod": "npx webpack --config webpack.common.js",
+    "build": "NODE_ENV=development npx webpack --config webpack.common.js",
+    "build:prod": "NODE_ENV=production npx webpack --config webpack.common.js",
     "heroku-postbuild": "npm run build:prod",
     "build:watch": "npx webpack --config webpack.common.js --watch"
   },
